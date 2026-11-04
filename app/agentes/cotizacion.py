@@ -25,6 +25,12 @@ async def consultar(consulta, hilo_id):
     agente = await preparar()
     resultado = await agente.ainvoke(
         {"messages": [("user", consulta)]},
-        config={"configurable": {"thread_id": f"{hilo_id}:cotizacion"}, "recursion_limit": 12},
+        config={
+            "configurable": {"thread_id": f"{hilo_id}:cotizacion"},
+            "recursion_limit": 12,
+            "metadata": {"hilo_id": hilo_id},
+            "tags": ["autonorte", "cotizacion"],
+            "run_name": "autonorte_cotizacion",
+        },
     )
     return guardas.texto_de(resultado)

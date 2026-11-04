@@ -97,6 +97,9 @@ async def responder(mensaje, hilo_id):
         "configurable": {"thread_id": f"{hilo_id}:{activo}" if activo else hilo_id},
         "recursion_limit": 12 if activo else 8,
         "callbacks": [trazas.CALLBACK],
+        "metadata": {"hilo_id": hilo_id},
+        "tags": ["autonorte", "orquestador"],
+        "run_name": "autonorte_orquestador",
     }
     try:
         texto = await guardas.ejecutar(agente, config, mensaje)

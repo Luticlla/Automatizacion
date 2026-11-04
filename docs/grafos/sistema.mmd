@@ -1,0 +1,29 @@
+flowchart TD
+  Cliente[Cliente web<br/>index.html] --> API[FastAPI<br/>POST /api/chat]
+  API --> Panel[Panel lateral<br/>solo lectura]
+  API --> Seguimiento{Seguimiento de flujo abierto<br/>ultimo agente del hilo}
+  Seguimiento -->|hay flujo abierto| AgenteActivo[Agente del flujo<br/>citas o cotizacion]
+  Seguimiento -->|sin flujo abierto| Orquestador[Orquestador<br/>create_agent + LLM local]
+  Orquestador --> Herramientas[Herramientas<br/>agente_citas / agente_cotizacion<br/>return_direct]
+  Herramientas --> Guardas[Guardas<br/>testigo de turno<br/>recursion_limit<br/>salida valida]
+  Guardas --> AgenteCitas[Agente de citas<br/>create_agent]
+  Guardas --> AgenteCotizacion[Agente de cotizacion<br/>create_agent]
+  AgenteActivo --> Guardas
+  AgenteCitas --> MCPCitas[Servidor MCP citas<br/>stdio]
+  AgenteCotizacion --> MCPCotizaciones[Servidor MCP cotizaciones<br/>stdio]
+  MCPCitas --> DBCitas[(var/proceso1.db)]
+  MCPCotizaciones --> DBCotizaciones[(var/proceso2.db)]
+  DBCitas --> ColaCitas[(cola_excepciones)]
+  DBCotizaciones --> ColaCotizaciones[(cola_excepciones)]
+  Orquestador --> Memoria[(InMemorySaver)]
+  AgenteCitas --> Memoria
+  AgenteCotizacion --> Memoria
+  Orquestador --> Trazas[var/trazas.jsonl]
+  AgenteCitas --> Trazas
+  AgenteCotizacion --> Trazas
+  Guardas --> Trazas
+  Panel --> DBCitas
+  Panel --> DBCotizaciones
+  Orquestador --> Modelo[llama-server local<br/>127.0.0.1:8080]
+  AgenteCitas --> Modelo
+  AgenteCotizacion --> Modelo
