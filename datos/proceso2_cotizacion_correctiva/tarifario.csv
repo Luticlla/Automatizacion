@@ -1,0 +1,13 @@
+codigo,servicio,mano_obra_soles,repuestos_soles,precio_total_soles,duracion_horas,palabras_clave
+FRE-01,Cambio de pastillas de freno delanteras,80,190,270,1.0,freno;frenos;pastillas;frena;ruido al frenar
+FRE-02,Cambio de discos de freno delanteros,120,420,540,1.5,disco;discos;vibra al frenar
+SUS-01,Cambio de amortiguadores delanteros (par),180,760,940,2.5,amortiguador;amortiguadores;rebota;suspension;golpetea
+SUS-02,Cambio de rotulas,150,320,470,2.0,rotula;rotulas;ruido en la direccion
+EMB-01,Cambio de kit de embrague,450,1150,1600,5.0,embrague;clutch;patina
+DIS-01,Cambio de correa de distribucion,380,520,900,4.0,correa;distribucion;correa de tiempo
+ELE-01,Cambio de bateria,40,380,420,0.5,bateria;no arranca;no prende
+ELE-02,Reparacion de alternador,220,650,870,3.0,alternador;no carga;luz de bateria
+REF-01,Cambio de bomba de agua,260,340,600,3.0,bomba de agua;recalienta;temperatura;sobrecalienta
+MOT-01,Reparacion de fuga de aceite (empaquetadura de carter),200,160,360,2.5,fuga de aceite;pierde aceite;gotea aceite
+NEU-01,Alineamiento y balanceo,90,0,90,1.0,alineamiento;balanceo;vibra el volante;se jala
+DGN-01,Diagnostico electronico con escaner,100,0,100,1.0,diagnostico;escaner;check engine;testigo encendido

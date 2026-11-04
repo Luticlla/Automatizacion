@@ -1,0 +1,4 @@
+tipo_servicio,kit_codigo,descripcion_kit,stock,duracion_horas
+preventivo_5000,KIT-5K,"Kit de 5000 km: aceite, filtro de aceite",0,1.5
+preventivo_10000,KIT-10K,"Kit de 10000 km: aceite, filtros de aceite y aire",4,2.0
+preventivo_20000,KIT-20K,"Kit de 20000 km: aceite, filtros, bujias y liquido de frenos",3,3.0

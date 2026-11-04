@@ -1,0 +1,2 @@
+id_cita,clave,placa,fecha,hora,bahia,tecnico,tipo_servicio,solicitante,estado
+CITA-0001,04fcdacec460c972277f1f831b696504,T4M-891,2026-10-20,08:00,B1,Carlos Vega,preventivo_10000,Marco Ruiz Delgado,confirmada

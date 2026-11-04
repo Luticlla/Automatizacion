@@ -1,0 +1,4 @@
+regla,valor,fuente
+descuento_maximo_pct,0,AS-IS: tarifa fija sin descuentos
+monto_maximo_sin_aprobacion_soles,2000,"Supuesto del equipo, por validar"
+vigencia_cotizacion_dias,7,"Supuesto del equipo, por validar"

@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title></title>
+<style>
+:root {
+  --acento: #0f766e;
+  --fondo: #f3f5f7;
+  --tarjeta: #ffffff;
+  --gris-burbuja: #e7eaee;
+  --texto: #22272e;
+  --texto-suave: #5b6470;
+  --borde: #d9dee4;
+  --resalte: #fff3bf;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--fondo);
+  color: var(--texto);
+  overflow: hidden;
+}
+button, textarea { font: inherit; }
+button:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+.marco {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  height: 100vh;
+  padding: 16px;
+}
+.chat, .panel {
+  background: var(--tarjeta);
+  border: 1px solid var(--borde);
+  border-radius: 14px;
+}
+.chat {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 16px;
+}
+.cabecera { padding-bottom: 10px; border-bottom: 1px solid var(--borde); }
+.cabecera h1 { margin: 0; font-size: 20px; }
+#subtitulo { margin: 4px 0 0; font-size: 14px; color: var(--texto-suave); }
+.mensajes {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 4px;
+}
+.burbuja {
+  max-width: 78%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  line-height: 1.45;
+}
+.burbuja.cliente {
+  align-self: flex-end;
+  background: var(--acento);
+  color: #ffffff;
+  border-bottom-right-radius: 4px;
+}
+.burbuja.asistente {
+  align-self: flex-start;
+  background: var(--gris-burbuja);
+  color: var(--texto);
+  border-bottom-left-radius: 4px;
+}
+.burbuja p { margin: 0; }
+.burbuja ul { margin: 0; padding-left: 20px; }
+.pensando-burbuja { display: flex; align-items: center; }
+.puntos { display: inline-flex; gap: 4px; margin-left: 8px; }
+.puntos span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--acento);
+  opacity: .3;
+  animation: pulso 1.1s infinite;
+}
+.puntos span:nth-child(2) { animation-delay: .18s; }
+.puntos span:nth-child(3) { animation-delay: .36s; }
+@keyframes pulso {
+  0%, 100% { opacity: .25; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-2px); }
+}
+.sugerencias { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px; }
+.chip {
+  background: #ffffff;
+  color: var(--acento);
+  border: 1px solid var(--acento);
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+.chip:hover { background: #eef7f5; }
+.entrada { display: flex; gap: 8px; padding: 8px 4px 4px; }
+#caja {
+  flex: 1;
+  resize: none;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: #ffffff;
+  color: var(--texto);
+}
+#enviar {
+  background: var(--acento);
+  color: #ffffff;
+  border: 0;
+  border-radius: 12px;
+  padding: 0 18px;
+  cursor: pointer;
+}
+#enviar:disabled, #caja:disabled { opacity: .55; cursor: not-allowed; }
+.pie {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px 0;
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+.secundario {
+  background: #ffffff;
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  padding: 6px 12px;
+  cursor: pointer;
+  color: var(--texto);
+}
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 14px;
+}
+.pestanas {
+  display: flex;
+  gap: 6px;
+  border-bottom: 1px solid var(--borde);
+  padding-bottom: 10px;
+}
+.pestana {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: none;
+  border: 0;
+  border-radius: 10px;
+  padding: 8px 6px;
+  cursor: pointer;
+  color: var(--texto-suave);
+}
+.pestana.activa {
+  color: var(--acento);
+  font-weight: 600;
+  box-shadow: inset 0 -3px 0 var(--acento);
+}
+.insignia {
+  background: var(--gris-burbuja);
+  color: var(--texto);
+  border-radius: 999px;
+  font-size: 12px;
+  padding: 1px 8px;
+}
+.pestana.activa .insignia { background: var(--acento); color: #ffffff; }
+.panel-contenido {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+}
+.titulo-contador {
+  margin: 0 0 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--texto-suave);
+}
+.tarjeta {
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: #ffffff;
+}
+.tarjeta.nueva { animation: resaltar 2.5s ease-out 1; }
+@keyframes resaltar {
+  0% { background: var(--resalte); }
+  100% { background: #ffffff; }
+}
+.tarjeta-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.estado {
+  font-size: 12px;
+  background: var(--gris-burbuja);
+  border-radius: 999px;
+  padding: 2px 8px;
+  color: var(--texto-suave);
+}
+.detalle { margin: 2px 0; font-size: 13.5px; color: #374151; }
+.vacio { color: var(--texto-suave); font-size: 14px; padding: 8px 2px; }
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+</style>
+</head>
+<body>
+<main class="marco">
+  <section class="chat" aria-label="Chat con el asistente">
+    <header class="cabecera">
+      <h1 id="titulo"></h1>
+      <p id="subtitulo"></p>
+    </header>
+    <div id="mensajes" class="mensajes" aria-live="polite"></div>
+    <div id="sugerencias" class="sugerencias" hidden></div>
+    <form id="formulario" class="entrada">
+      <label class="oculto" for="caja">Escribe tu mensaje</label>
+      <textarea id="caja" rows="2" autocomplete="off"></textarea>
+      <button id="enviar" type="submit">Enviar</button>
+    </form>
+    <footer class="pie">
+      <span id="pie"></span>
+      <button id="nueva" type="button" class="secundario">Nueva conversación</button>
+    </footer>
+  </section>
+  <aside class="panel" aria-label="Panel de registros">
+    <nav id="pestanas" class="pestanas" role="tablist" aria-label="Secciones del panel"></nav>
+    <div id="panel-contenido" class="panel-contenido" role="tabpanel"></div>
+  </aside>
+</main>
+<script>
+"use strict";
+const ERROR_CONEXION = "No pude conectarme con el asistente. ¿Está encendido el modelo (qwen.sh)?";
+const LISTAS = ["citas", "tareas", "cotizaciones"];
+const CONTADORES = ["citas_confirmadas", "tareas_pendientes", "ordenes_trabajo"];
+
+let textos = null;
+let esperando = false;
+let pestanaActiva = 0;
+let listoPrimeraCarga = false;
+const vistas = { citas: new Set(), tareas: new Set(), cotizaciones: new Set() };
+
+let hiloId;
+try {
+  hiloId = sessionStorage.getItem("hilo_id_autonorte");
+  if (!hiloId) {
+    hiloId = crypto.randomUUID();
+    sessionStorage.setItem("hilo_id_autonorte", hiloId);
+  }
+} catch (error) {
+  hiloId = crypto.randomUUID();
+}
+
+const $ = (id) => document.getElementById(id);
+
+function agregar(elemento) {
+  const contenedor = $("mensajes");
+  contenedor.appendChild(elemento);
+  contenedor.scrollTop = contenedor.scrollHeight;
+}
+
+function burbuja(texto, quien) {
+  const div = document.createElement("div");
+  div.className = "burbuja " + quien;
+  if (quien === "asistente") {
+    div.appendChild(contenidoAsistente(texto));
+  } else {
+    div.textContent = texto;
+  }
+  return div;
+}
+
+function contenidoAsistente(texto) {
+  const fragmento = document.createDocumentFragment();
+  let lista = null;
+  for (const linea of texto.split("\n")) {
+    if (linea.startsWith("* ") || linea.startsWith("- ")) {
+      if (!lista) {
+        lista = document.createElement("ul");
+        fragmento.appendChild(lista);
+      }
+      const elemento = document.createElement("li");
+      agregarConNegritas(elemento, linea.slice(2).trimStart());
+      lista.appendChild(elemento);
+    } else {
+      lista = null;
+      const parrafo = document.createElement("p");
+      agregarConNegritas(parrafo, linea);
+      fragmento.appendChild(parrafo);
+    }
+  }
+  return fragmento;
+}
+
+function agregarConNegritas(contenedor, texto) {
+  let resto = texto;
+  while (resto) {
+    const inicio = resto.indexOf("**");
+    if (inicio === -1) {
+      contenedor.appendChild(document.createTextNode(resto));
+      break;
+    }
+    const fin = resto.indexOf("**", inicio + 2);
+    if (fin === -1) {
+      contenedor.appendChild(document.createTextNode(resto));
+      break;
+    }
+    if (inicio > 0) {
+      contenedor.appendChild(document.createTextNode(resto.slice(0, inicio)));
+    }
+    const negrita = resto.slice(inicio + 2, fin);
+    if (negrita) {
+      const fuerte = document.createElement("strong");
+      fuerte.textContent = negrita;
+      contenedor.appendChild(fuerte);
+    }
+    resto = resto.slice(fin + 2);
+  }
+}
+
+function burbujaPensando() {
+  const div = document.createElement("div");
+  div.className = "burbuja asistente pensando-burbuja";
+  const etiqueta = document.createElement("span");
+  etiqueta.textContent = textos ? textos.pensando : "";
+  div.appendChild(etiqueta);
+  const puntos = document.createElement("span");
+  puntos.className = "puntos";
+  for (let indice = 0; indice < 3; indice += 1) {
+    puntos.appendChild(document.createElement("span"));
+  }
+  div.appendChild(puntos);
+  return div;
+}
+
+function pintarSaludo() {
+  if (!textos) return;
+  agregar(burbuja(textos.saludo, "asistente"));
+}
+
+function pintarSugerencias() {
+  if (!textos) return;
+  const contenedor = $("sugerencias");
+  contenedor.textContent = "";
+  for (const sugerencia of textos.sugerencias) {
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.className = "chip";
+    boton.textContent = sugerencia;
+    boton.addEventListener("click", () => enviar(sugerencia));
+    contenedor.appendChild(boton);
+  }
+  contenedor.hidden = false;
+}
+
+function ocultarSugerencias() {
+  $("sugerencias").hidden = true;
+}
+
+function bloquearEntrada(activo) {
+  $("caja").disabled = activo;
+  $("enviar").disabled = activo;
+}
+
+async function enviar(texto) {
+  const limpio = (texto || "").trim();
+  if (!limpio || esperando) return;
+  esperando = true;
+  ocultarSugerencias();
+  agregar(burbuja(limpio, "cliente"));
+  const pendiente = burbujaPensando();
+  agregar(pendiente);
+  bloquearEntrada(true);
+  let respuestaTexto = ERROR_CONEXION;
+  const controlador = new AbortController();
+  const temporizador = setTimeout(() => controlador.abort(), 180000);
+  try {
+    const respuesta = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mensaje: limpio, hilo_id: hiloId }),
+      signal: controlador.signal
+    });
+    if (respuesta.ok) {
+      const datos = await respuesta.json();
+      respuestaTexto = datos.respuesta;
+    } else {
+      let detalle = null;
+      try {
+        detalle = (await respuesta.json()).detail;
+      } catch (error) {
+        detalle = null;
+      }
+      if (typeof detalle === "string") respuestaTexto = detalle;
+    }
+  } catch (error) {
+    respuestaTexto = ERROR_CONEXION;
+  }
+  clearTimeout(temporizador);
+  pendiente.remove();
+  agregar(burbuja(respuestaTexto, "asistente"));
+  esperando = false;
+  bloquearEntrada(false);
+  $("caja").focus();
+  cargarPanel();
+}
+
+function numeroContador(datos, indice) {
+  if (!datos || !datos.contadores) return 0;
+  return datos.contadores[CONTADORES[indice]] || 0;
+}
+
+function pintarPestanas(datos) {
+  if (!textos || !textos.panel) return;
+  const nav = $("pestanas");
+  nav.textContent = "";
+  textos.panel.pestanas.forEach((nombre, indice) => {
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.className = "pestana" + (indice === pestanaActiva ? " activa" : "");
+    boton.setAttribute("role", "tab");
+    boton.setAttribute("aria-selected", indice === pestanaActiva ? "true" : "false");
+    boton.textContent = nombre;
+    const insignia = document.createElement("span");
+    insignia.className = "insignia";
+    insignia.textContent = String(numeroContador(datos, indice));
+    boton.appendChild(insignia);
+    boton.addEventListener("click", () => {
+      pestanaActiva = indice;
+      pintarPestanas(datos);
+      pintarPanel(datos);
+    });
+    nav.appendChild(boton);
+  });
+}
+
+function lineaDetalle(texto) {
+  const linea = document.createElement("p");
+  linea.className = "detalle";
+  linea.textContent = texto;
+  return linea;
+}
+
+function crearTarjeta(indice, elemento) {
+  const tarjeta = document.createElement("article");
+  tarjeta.className = "tarjeta";
+  const cabecera = document.createElement("div");
+  cabecera.className = "tarjeta-cabecera";
+  const nombre = document.createElement("strong");
+  const estado = document.createElement("span");
+  estado.className = "estado";
+  estado.textContent = elemento.estado;
+  if (indice === 0) {
+    nombre.textContent = elemento.id;
+    cabecera.appendChild(nombre);
+    cabecera.appendChild(estado);
+    tarjeta.appendChild(cabecera);
+    tarjeta.appendChild(lineaDetalle(elemento.fecha + " · " + elemento.hora));
+    tarjeta.appendChild(lineaDetalle("Placa " + elemento.placa + " · " + elemento.tipo_servicio));
+    tarjeta.appendChild(lineaDetalle(elemento.solicitante));
+  } else if (indice === 1) {
+    nombre.textContent = "Tarea " + elemento.id;
+    cabecera.appendChild(nombre);
+    cabecera.appendChild(estado);
+    tarjeta.appendChild(cabecera);
+    tarjeta.appendChild(lineaDetalle(elemento.motivo));
+    tarjeta.appendChild(lineaDetalle(elemento.proceso + " · " + elemento.fecha_hora));
+  } else {
+    nombre.textContent = elemento.id;
+    cabecera.appendChild(nombre);
+    cabecera.appendChild(estado);
+    tarjeta.appendChild(cabecera);
+    tarjeta.appendChild(lineaDetalle(elemento.vehiculo));
+    tarjeta.appendChild(lineaDetalle("Total S/ " + Number(elemento.total).toFixed(2)));
+    if (elemento.id_ot) {
+      tarjeta.appendChild(lineaDetalle("Orden de trabajo " + elemento.id_ot));
+    }
+  }
+  return tarjeta;
+}
+
+function pintarPanel(datos) {
+  if (!textos || !textos.panel) return;
+  const contenedor = $("panel-contenido");
+  contenedor.textContent = "";
+  const etiqueta = document.createElement("p");
+  etiqueta.className = "titulo-contador";
+  etiqueta.textContent = textos.panel.contadores[pestanaActiva] + ": " + numeroContador(datos, pestanaActiva);
+  contenedor.appendChild(etiqueta);
+  const lista = datos && datos[LISTAS[pestanaActiva]] ? datos[LISTAS[pestanaActiva]] : [];
+  if (!lista.length) {
+    const vacio = document.createElement("p");
+    vacio.className = "vacio";
+    vacio.textContent = textos.panel.vacio;
+    contenedor.appendChild(vacio);
+    return;
+  }
+  const vistasLista = vistas[LISTAS[pestanaActiva]];
+  for (const elemento of lista) {
+    const tarjeta = crearTarjeta(pestanaActiva, elemento);
+    if (listoPrimeraCarga && !vistasLista.has(elemento.id)) {
+      tarjeta.classList.add("nueva");
+    }
+    vistasLista.add(elemento.id);
+    contenedor.appendChild(tarjeta);
+  }
+}
+
+async function cargarPanel() {
+  let datos = null;
+  try {
+    const respuesta = await fetch("/api/panel");
+    if (respuesta.ok) datos = await respuesta.json();
+  } catch (error) {
+    datos = null;
+  }
+  pintarPestanas(datos);
+  pintarPanel(datos);
+  if (datos) listoPrimeraCarga = true;
+}
+
+async function cargarTextos() {
+  try {
+    const respuesta = await fetch("/api/textos");
+    if (!respuesta.ok) return;
+    textos = await respuesta.json();
+    document.title = textos.titulo;
+    $("titulo").textContent = textos.titulo;
+    $("subtitulo").textContent = textos.subtitulo;
+    $("caja").placeholder = textos.placeholder;
+    $("pie").textContent = textos.pie;
+  } catch (error) {
+    textos = null;
+  }
+}
+
+$("formulario").addEventListener("submit", (evento) => {
+  evento.preventDefault();
+  const texto = $("caja").value.trim();
+  if (!texto || esperando) return;
+  $("caja").value = "";
+  enviar(texto);
+});
+
+$("caja").addEventListener("keydown", (evento) => {
+  if (evento.key === "Enter" && !evento.shiftKey) {
+    evento.preventDefault();
+    $("formulario").requestSubmit();
+  }
+});
+
+$("nueva").addEventListener("click", () => {
+  try {
+    hiloId = crypto.randomUUID();
+    sessionStorage.setItem("hilo_id_autonorte", hiloId);
+  } catch (error) {
+    hiloId = crypto.randomUUID();
+  }
+  $("mensajes").textContent = "";
+  pintarSaludo();
+  pintarSugerencias();
+  $("caja").focus();
+});
+
+async function iniciar() {
+  await cargarTextos();
+  pintarSaludo();
+  pintarSugerencias();
+  await cargarPanel();
+}
+
+iniciar();
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "titulo": "Asistente de Autonorte",
+  "subtitulo": "Citas de mantenimiento preventivo y cotizaciones de reparación",
+  "saludo": "Hola, soy el asistente de Autonorte Servicios Automotrices. Puedo agendar tu cita de mantenimiento preventivo y cotizar una reparación. ¿Qué necesitas?",
+  "sugerencias": [
+    "Quiero una cita de mantenimiento preventivo",
+    "Necesito cotizar una reparación",
+    "¿Qué puedes hacer?"
+  ],
+  "placeholder": "Escribe tu mensaje...",
+  "pensando": "Pensando...",
+  "pie": "Los datos de esta demostración son simulados.",
+  "panel": {
+    "pestanas": [
+      "Citas",
+      "Tareas pendientes",
+      "Cotizaciones"
+    ],
+    "contadores": [
+      "citas confirmadas",
+      "tareas pendientes",
+      "órdenes de trabajo"
+    ],
+    "vacio": "Todavía no hay registros."
+  }
+}

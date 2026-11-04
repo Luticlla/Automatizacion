@@ -1,0 +1,87 @@
+{
+  "descripcion": "Contrato de datos de la solicitud de cita (Lab 02). Se valida antes de cualquier accion.",
+  "hoy_para_pruebas": "2026-10-16",
+  "campos": [
+    {
+      "nombre": "solicitante",
+      "tipo": "texto",
+      "obligatorio": true,
+      "regla": "de 1 a 120 caracteres",
+      "ejemplo": "Marco Ruiz Delgado"
+    },
+    {
+      "nombre": "telefono",
+      "tipo": "texto",
+      "obligatorio": true,
+      "regla": "9 digitos que empiezan en 9",
+      "patron": "^9[0-9]{8}$",
+      "ejemplo": "987654321"
+    },
+    {
+      "nombre": "placa",
+      "tipo": "texto",
+      "obligatorio": true,
+      "regla": "una letra, dos letras o numeros, guion y tres digitos",
+      "patron": "^[A-Z][A-Z0-9]{2}-[0-9]{3}$",
+      "ejemplo": "T4M-891"
+    },
+    {
+      "nombre": "tipo_servicio",
+      "tipo": "enumerado",
+      "obligatorio": true,
+      "valores": [
+        "preventivo_5000",
+        "preventivo_10000",
+        "preventivo_20000"
+      ],
+      "ejemplo": "preventivo_10000"
+    },
+    {
+      "nombre": "fecha_solicitada",
+      "tipo": "fecha",
+      "obligatorio": true,
+      "regla": "formato AAAA-MM-DD y no anterior a hoy",
+      "ejemplo": "2026-10-21"
+    },
+    {
+      "nombre": "canal",
+      "tipo": "enumerado",
+      "obligatorio": true,
+      "valores": [
+        "web",
+        "whatsapp",
+        "telefono"
+      ],
+      "regla": "En el chat NO se pregunta: el sistema lo pone en 'web'.",
+      "ejemplo": "web"
+    },
+    {
+      "nombre": "correo",
+      "tipo": "texto",
+      "obligatorio": false,
+      "regla": "correo valido si viene; si no es valido se ignora",
+      "ejemplo": "cliente@ejemplo.pe"
+    },
+    {
+      "nombre": "hora_preferida",
+      "tipo": "texto",
+      "obligatorio": false,
+      "regla": "HH:MM entre 08:00 y 17:00; el taller asigna la hora final",
+      "ejemplo": "09:30"
+    },
+    {
+      "nombre": "descripcion",
+      "tipo": "texto",
+      "obligatorio": false,
+      "regla": "hasta 500 caracteres",
+      "ejemplo": "Mantenimiento de los 20 mil kilometros"
+    }
+  ],
+  "campos_que_se_preguntan_en_el_chat": [
+    "solicitante",
+    "telefono",
+    "placa",
+    "tipo_servicio",
+    "fecha_solicitada"
+  ]
+}
