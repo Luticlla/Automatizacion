@@ -1,0 +1,25 @@
+Escrito docs/grafos/proceso1.mmd
+Escrito docs/grafos/proceso1.png
+
+== Cita nueva ==
+Resultado: {'ok': True, 'id_cita': 'CITA-0002', 'fecha': '2026-10-21', 'hora': '08:00', 'bahia': 'B1', 'tecnico': 'Carlos Vega', 'que_hacer': 'Confirma la cita e incluye su codigo (id_cita), fecha y hora.', 'estado': 'confirmada', 'mensaje': 'Cita CITA-0002 confirmada para 2026-10-21 a las 08:00.'}
+
+== Datos invalidos ==
+Pausa H1r: Corrige la solicitud en la cola de revision.
+Reanudar con: {'corregido': True}
+Resultado: {'ok': False, 'estado': 'devuelta_para_correccion', 'id_excepcion': 'EXC-0001', 'errores': [{'ok': False, 'codigo': 'TELEFONO_INVALIDO', 'mensaje': 'El telefono no es valido.', 'que_hacer': 'Pedir un telefono de 9 digitos que empiece en 9.', 'clase': 'datos'}, {'ok': False, 'codigo': 'PLACA_INVALIDA', 'mensaje': 'La placa no tiene el formato correcto.', 'que_hacer': 'Pedir la placa con el formato T4M-891.', 'clase': 'datos'}, {'ok': False, 'codigo': 'TIPO_INVALIDO', 'mensaje': 'Ese tipo de servicio no existe.', 'que_hacer': 'Ofrecer preventivo_5000, preventivo_10000 o preventivo_20000.', 'clase': 'datos'}, {'ok': False, 'codigo': 'FECHA_INVALIDA', 'mensaje': 'La fecha no es valida.', 'que_hacer': 'Pedir una fecha desde hoy, formato AAAA-MM-DD.', 'clase': 'datos'}]}
+
+== Posible correctivo ==
+Pausa H2d: Resuelve si el caso es correctivo o preventivo.
+Reanudar con: {'decision': 'correctivo'}
+Resultado: {'ok': True, 'estado': 'derivado_correctivo', 'id_excepcion': 'EXC-0002'}
+
+== Sin kit ==
+Pausa H3k: Gestiona el pedido del kit y acuerda la fecha con el cliente.
+Reanudar con: {'decision': 'gestionado'}
+Resultado: {'ok': True, 'estado': 'kit_gestionado', 'id_excepcion': 'EXC-0003', 'detalle': 'H3k se resolvio con una persona. El grafo no continua a G4b/G6 porque logica.py no actualiza el stock del kit.'}
+
+== Duracion mayor a 2 horas ==
+Pausa H4a: Aprueba la asignacion excepcional de mas de 2 horas.
+Reanudar con: {'aprobado': True}
+Resultado: {'ok': False, 'codigo': 'REQUIERE_APROBACION', 'mensaje': 'Este servicio necesita aprobacion del jefe de taller.', 'que_hacer': "Llama derivar_a_humano con motivo='REQUIERE_APROBACION' y la clave; explica que lo aprueba el jefe de taller.", 'clase': 'datos'}

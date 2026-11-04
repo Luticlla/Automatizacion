@@ -1,6 +1,6 @@
 # HITL del proyecto frente al BPMN TO-BE
 
-HITL (*human in the loop*) significa que una persona interviene en un punto del proceso. El chat actual es asincrono: cuando una regla pide una persona, el caso se encola en `cola_excepciones` y el cliente recibe un aviso; el grafo **no se pausa**. LangGraph permite una pausa real con `interrupt()` y `Command(resume=...)`, pero en este proyecto eso esta solo en la demo `app/lcel/hitl_demo.py`, no conectado al chat.
+HITL (*human in the loop*) significa que una persona interviene en un punto del proceso. El chat actual es asincrono: cuando una regla pide una persona, el caso se encola en `cola_excepciones` y el cliente recibe un aviso; el grafo **no se pausa**. LangGraph permite una pausa real con `interrupt()` y `Command(resume=...)`; en este proyecto eso esta en la demo `app/lcel/hitl_demo.py` y en el grafo determinista `app/grafo_proceso1.py`, ninguno conectado al chat.
 
 ## Puntos HITL que existen hoy
 
@@ -40,8 +40,67 @@ El identificador `H4a` no aparece en las especificaciones del repositorio; se as
 | Confirmacion del cliente antes de registrar cita u orden | Testigo de un solo uso + guarda de turno (`ESPERAR_CONFIRMACION`) | `interrupt()` + `Command(resume={"confirmado": true})` | Produccion: testigo. `interrupt`: no implementado |
 | Limite de iteraciones del agente | `recursion_limit` en codigo y derivacion automatica | Nodo de fallback con `interrupt()` o derivacion | Produccion: derivacion |
 
+## Grafo determinista del proceso 1
+
+`app/grafo_proceso1.py` modela el TO-BE con un `StateGraph` determinista. No llama al modelo: cada nodo ejecuta codigo y reutiliza las funciones puras de `app/mcp_citas/logica.py`. Los cuatro nodos del carril Humano usan `interrupt()` y se reanudan con `Command(resume=...)`; el checkpointer es `InMemorySaver`.
+
+| Elemento del BPMN | Nodo LangGraph | Que guarda o devuelve |
+| --- | --- | --- |
+| `Start_1` | `s1v_validar` | `validacion`, `clave` |
+| `G1` | `g1_contrato` | `ruta_g1` |
+| `S2c` | `s2c_registrar_cola` | `datos_invalidos`, `excepcion_id` |
+| `H1r` | `h1r_corregir` | `interrupt`; al reanudar, `devuelta_para_correccion` |
+| `S3n` | `s3n_normalizar` | `clave` |
+| `S2b` | `s2b_consultar_clave` | `estado_validacion` |
+| `G2` | `g2_clave_existe` | `ruta_g2` |
+| `S4d` | `s4d_devolver` | `ya_existe`, `cita` |
+| `S5c` | `s5c_clasificar` | `estado_validacion` |
+| `G3` | `g3_preventivo` | `ruta_g3` |
+| `S_rev` | `s_rev_encolar` | `excepcion_id` con motivo `POSIBLE_CORRECTIVO` |
+| `H2d` | `h2d_resolver` | `interrupt`; al reanudar, `resolucion` (`correctivo` o `preventivo`) |
+| `G3c` | `g3c_resolucion` | `ruta_g3c` |
+| `S6d` | `s6d_notificar` | `derivado_correctivo` |
+| `G3b` | `g3b_continuar` | Ruta al paralelo |
+| `AND1` / `AND2` | `and1` / `and2` | Abren y cierran las ramas paralelas |
+| `S7c` | `s7c_consultar_cupo` | `consulta_cupo` |
+| `S8k` | `s8k_verificar_kit` | `consulta_kit` |
+| `G4` | `g4_clasificar` | `ruta_g4` |
+| `S_kit` | `s_kit_encolar` | `excepcion_id` con motivo `SIN_KIT` |
+| `H3k` | `h3k_gestionar` | `interrupt`; al reanudar, `kit_gestionado` |
+| `S9q` / `S9a` | `s9q_alternativas` / `s9a_proponer` | `alternativas` y texto para el cliente |
+| `G5` | `g5_eleccion` | Ruta a `IC_msg`; el plazo de 24 h queda aislado |
+| `IC_msg` | `ic_msg` | `interrupt`; al reanudar, `fecha_elegida` y nueva validacion |
+| `IC_t24` | `ic_t24` | Nodo aislado: temporizador de 24 h no implementado |
+| `S10d` | `s10d_desistida` | `desistida` |
+| `G4b` | `g4b_continuar` | Ruta a `G6` |
+| `G6` | `g6_duracion` | `ruta_g6` |
+| `S_apr` | `s_apr_encolar` | `excepcion_id` con motivo `REQUIERE_APROBACION` |
+| `H4a` | `h4a_aprobar` | `interrupt`; al reanudar, `aprobacion` |
+| `G6b` | `g6b_decision` | `ruta_g6b` |
+| `S12r` | `s12r_registrar` | `cita` o el error de `preparar_cita` / `confirmar_cita` |
+| `S14c` | `s14c_confirmar` | `confirmada` con `id_cita` |
+| `End_1` a `End_7` | `end_1` a `end_7` | Cierre de cada ruta |
+| `BE_cupo`, `BE_kit`, `BE_alt`, `BE_err`, `BT_kit`, `H5r`, `S_cls`, `S13f` | `be_cupo`, `be_kit`, `be_alt`, `be_err`, `bt_kit`, `h5r_reprogramar`, `s_cls`, `s13f_cola_fallidos` | Nodos aislados: errores, reintentos y plazos no implementados |
+
+### Decisiones honestas del grafo
+
+- `S7c` y `S8k` se ejecutan en paralelo real, pero `logica.py` expone una sola funcion combinada (`consultar_disponibilidad`); ambas ramas la invocan y `G4` usa el resultado comun. El diagrama conserva la topologia `AND1 -> S7c/S8k -> AND2`.
+- `H3k` termina en `kit_gestionado`: el stock de `preventivo_5000` sigue en 0 y `logica.py` no tiene una accion para actualizarlo. El grafo no inventa esa escritura.
+- `H4a` aprobado intenta `S12r`, pero `preparar_cita` vuelve a devolver `REQUIERE_APROBACION` porque la regla de duracion no tiene excepcion en `logica.py`. El caso termina sin cita y con el error visible.
+- `H4a` rechazado termina en `end_4` (`rechazada_por_jefe`): el BPMN no define una compuerta de rechazo, asi que el grafo cierra el caso sin registrar.
+- `IC_t24`, los cuatro `BE_*`, `BT_kit`, `H5r`, `S_cls` y `S13f` quedan como nodos aislados; no se simulan temporizadores, reintentos ni la cola de fallidos.
+
+### Como se ejecuta
+
+```bash
+.venv/bin/python scripts/demo_grafo.py
+.venv/bin/python -m pytest tests/test_grafo_proceso1.py -q
+```
+
+La demo corre cinco escenarios: cita nueva, datos invalidos, posible correctivo, sin kit y duracion mayor a 2 horas. Genera `docs/grafos/proceso1.mmd` y `docs/grafos/proceso1.png`.
+
 ## Conclusion honesta
 
 - **En produccion** estan la derivacion a la cola de excepciones, la confirmacion en dos pasos con testigo y la aprobacion como tarea pendiente en la cola. Ninguno de esos flujos pausa el grafo.
-- **Solo demo** esta el uso real de `interrupt()` y `Command(resume=...)` en `app/lcel/hitl_demo.py`, con `InMemorySaver` y dos casos (aprueba/rechaza).
+- **En demos LangGraph** esta el uso real de `interrupt()` y `Command(resume=...)`: `app/lcel/hitl_demo.py` (aprueba/rechaza) y `app/grafo_proceso1.py` (H1r, H2d, H3k, H4a e IC_msg), ambos con `InMemorySaver`.
 - Para llevar el HITL del BPMN a LangGraph en produccion faltaria un checkpointer persistente y una API para que el asesor reanude el hilo; mientras tanto, la cola SQLite es la implementacion real y es la que ejercitan los 14 casos.

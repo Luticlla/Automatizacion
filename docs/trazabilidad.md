@@ -21,6 +21,22 @@ Cada fila liga un elemento del BPMN con la herramienta o el agente que lo implem
 | S14c Enviar la confirmación inmediata | Respuesta del agente tras `confirmar_cita` | `app/agentes/citas.py` → `consultar` | P1-01 |
 | Proc_Cliente (pool Cliente) | El chat web | `app/web/index.html` | P1-01 a P2-06 (todos) |
 
+## Grafo determinista del proceso 1 (TO-BE)
+
+| Elemento del BPMN | Nodo LangGraph | Archivo y función | Verificación |
+| --- | --- | --- | --- |
+| `Start_1`, `S1v`, `G1` | `s1v_validar`, `g1_contrato` | `app/grafo_proceso1.py` → `s1v_validar` / `g1_contrato` | `test_flujo_feliz...`, `test_datos_invalidos...` |
+| `S2c`, `H1r` | `s2c_registrar_cola`, `h1r_corregir` | `app/grafo_proceso1.py` → `s2c_registrar_cola` / `h1r_corregir` | `test_datos_invalidos_pausan_en_h1r` |
+| `S3n`, `S2b`, `G2`, `S4d` | `s3n_normalizar`, `s2b_consultar_clave`, `g2_clave_existe`, `s4d_devolver` | `app/grafo_proceso1.py` | `test_cita_existente_no_duplica` |
+| `S5c`, `G3`, `S_rev`, `H2d`, `G3c`, `S6d` | `s5c_clasificar`, `g3_preventivo`, `s_rev_encolar`, `h2d_resolver`, `g3c_resolucion`, `s6d_notificar` | `app/grafo_proceso1.py` | `test_posible_correctivo...`, `test_h2d_puede_devolver...` |
+| `AND1`, `S7c`, `S8k`, `AND2`, `G4` | `and1`, `s7c_consultar_cupo`, `s8k_verificar_kit`, `and2`, `g4_clasificar` | `app/grafo_proceso1.py` | `test_flujo_feliz...` |
+| `S_kit`, `H3k` | `s_kit_encolar`, `h3k_gestionar` | `app/grafo_proceso1.py` | `test_sin_kit_pausa_en_h3k...` |
+| `S9q`, `S9a`, `G5`, `IC_msg` | `s9q_alternativas`, `s9a_proponer`, `g5_eleccion`, `ic_msg` | `app/grafo_proceso1.py` | `test_sin_cupo_ofrece_alternativas...` |
+| `G4b`, `G6`, `S_apr`, `H4a`, `G6b` | `g4b_continuar`, `g6_duracion`, `s_apr_encolar`, `h4a_aprobar`, `g6b_decision` | `app/grafo_proceso1.py` | `test_duracion_larga...`, `test_h4a_rechazado...` |
+| `S12r`, `S14c` | `s12r_registrar`, `s14c_confirmar` | `app/grafo_proceso1.py` | `test_flujo_feliz...` |
+| `End_1` a `End_7` | `end_1` a `end_7` | `app/grafo_proceso1.py` | `test_grafo_expone_nodos_bpmn...` |
+| `IC_t24`, `BE_cupo`, `BE_kit`, `BE_alt`, `BE_err`, `BT_kit`, `H5r`, `S_cls`, `S13f` | `ic_t24`, `be_cupo`, `be_kit`, `be_alt`, `be_err`, `bt_kit`, `h5r_reprogramar`, `s_cls`, `s13f_cola_fallidos` | `app/grafo_proceso1.py` | Nodos aislados: no implementados |
+
 ## Proceso 2 — Cotización de reparación correctiva
 
 | Elemento del BPMN | Herramienta o agente | Archivo y función | Caso de prueba |
@@ -57,6 +73,11 @@ Cada fila liga un elemento del BPMN con la herramienta o el agente que lo implem
 | `scripts/demo_lcel.py` | `.invoke`, `.batch` y `.astream` sobre 3 mensajes | LCEL | ejecución manual |
 | `scripts/exportar_grafos.py` | Exporta `get_graph().draw_mermaid()` y PNG | LangGraph | `docs/grafos/` |
 | `scripts/demo_hitl.py` | Pausa el grafo y reanuda con `Command(resume=...)` | HITL | ejecución manual |
+| `app/grafo_proceso1.py` | Grafo determinista del TO-BE del proceso 1, con HITL y ramas paralelas | Proceso 1 / LangGraph | `tests/test_grafo_proceso1.py` |
+| `scripts/demo_grafo.py` | Corre 5 escenarios del grafo y exporta el diagrama | Proceso 1 / LangGraph | ejecución manual |
+| `tests/test_grafo_proceso1.py` | Pruebas del grafo sin modelo | Proceso 1 | `pytest -q` |
+| `docs/grafos/proceso1.mmd` | Diagrama Mermaid del grafo del proceso 1 | Proceso 1 | `scripts/demo_grafo.py` |
+| `docs/grafos/proceso1.png` | Imagen del grafo del proceso 1 | Proceso 1 | `scripts/demo_grafo.py` |
 | `scripts/verificar_langsmith.py` | Comprueba variables sin imprimir la clave y ejecuta una prueba | LangSmith | ejecución manual |
 | `scripts/inventario_agentes.py` | Lee el código y genera el inventario | Supervisor y subagentes | `docs/inventario_agentes.md` |
 | `docs/lcel.md` | Términos LCEL con archivo y línea | LCEL | revisión |
@@ -73,9 +94,13 @@ Cada fila liga un elemento del BPMN con la herramienta o el agente que lo implem
 | `docs/grafos/cotizacion.png` | Imagen del grafo del agente de cotización | Agente de cotización | `scripts/exportar_grafos.py` |
 | `docs/grafos/hitl.mmd` | Grafo de la demo HITL | HITL | `scripts/demo_hitl.py` |
 | `docs/grafos/hitl.png` | Imagen del grafo HITL | HITL | `scripts/demo_hitl.py` |
-| `evidencias/2026-11-03_2355_pytest.txt` | Salida de `pytest` (33 passed) | Cierre | `pytest -q` |
-| `evidencias/2026-11-03_2355_consola_casos.txt` | Salida de los 14 casos | Cierre | `scripts/correr_casos.py` |
-| `evidencias/2026-11-03_2357_resultados.md` | Evidencia detallada de los 14 casos | Cierre | `scripts/correr_casos.py` |
+| `evidencias/2026-11-03_2355_pytest.txt` | Salida de `pytest` (33 passed) | Cierre de la sesión anterior | `pytest -q` |
+| `evidencias/2026-11-03_2355_consola_casos.txt` | Salida de los 14 casos | Cierre de la sesión anterior | `scripts/correr_casos.py` |
+| `evidencias/2026-11-03_2357_resultados.md` | Evidencia detallada de los 14 casos | Cierre de la sesión anterior | `scripts/correr_casos.py` |
+| `evidencias/2026-11-04_0044_pytest.txt` | Salida de `pytest` (43 passed) | Grafo y pruebas | `pytest -q` |
+| `evidencias/2026-11-04_0044_demo_grafo.txt` | Salida de los 5 escenarios del grafo | Grafo / HITL | `scripts/demo_grafo.py` |
+| `evidencias/2026-11-04_0046_consola_casos.txt` | Salida de los 14 casos con el modelo local | Regresión del chat | `scripts/correr_casos.py` |
+| `evidencias/2026-11-04_0046_resultados.md` | Evidencia detallada: 14 de 14 casos | Regresión del chat | `scripts/correr_casos.py` |
 
 ## Archivos modificados en la sesión
 
@@ -84,4 +109,5 @@ Cada fila liga un elemento del BPMN con la herramienta o el agente que lo implem
 | `app/agentes/orquestador.py` | `metadata`, `tags` y `run_name` en `responder` | traza LangSmith anidada |
 | `app/agentes/citas.py` | `metadata`, `tags` y `run_name` en `consultar` | traza LangSmith anidada |
 | `app/agentes/cotizacion.py` | `metadata`, `tags` y `run_name` en `consultar` | traza LangSmith anidada |
+| `.env.example` | `LANGSMITH_TRACING=false` y se elimino `API_LANGSMITH` | `.env` sigue en `.gitignore` |
 | `.env` (ignorado) | `HOY_FIJO=2026-10-16` y variables `LANGSMITH_*` | no se versiona; `.env.example` tiene marcadores |

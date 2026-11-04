@@ -1,0 +1,116 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__(<p>__start__</p>)
+	s1v_validar(s1v_validar)
+	g1_contrato(g1_contrato)
+	s2c_registrar_cola(s2c_registrar_cola)
+	h1r_corregir(h1r_corregir)
+	s3n_normalizar(s3n_normalizar)
+	s2b_consultar_clave(s2b_consultar_clave)
+	g2_clave_existe(g2_clave_existe)
+	s4d_devolver(s4d_devolver)
+	s5c_clasificar(s5c_clasificar)
+	g3_preventivo(g3_preventivo)
+	s_rev_encolar(s_rev_encolar)
+	h2d_resolver(h2d_resolver)
+	g3c_resolucion(g3c_resolucion)
+	s6d_notificar(s6d_notificar)
+	g3b_continuar(g3b_continuar)
+	and1(and1)
+	s7c_consultar_cupo(s7c_consultar_cupo)
+	s8k_verificar_kit(s8k_verificar_kit)
+	and2(and2)
+	g4_clasificar(g4_clasificar)
+	s_kit_encolar(s_kit_encolar)
+	h3k_gestionar(h3k_gestionar)
+	s9q_alternativas(s9q_alternativas)
+	s9a_proponer(s9a_proponer)
+	g5_eleccion(g5_eleccion)
+	ic_msg(ic_msg)
+	ic_t24(ic_t24)
+	s10d_desistida(s10d_desistida)
+	g4b_continuar(g4b_continuar)
+	g6_duracion(g6_duracion)
+	s_apr_encolar(s_apr_encolar)
+	h4a_aprobar(h4a_aprobar)
+	g6b_decision(g6b_decision)
+	s12r_registrar(s12r_registrar)
+	s14c_confirmar(s14c_confirmar)
+	s_cls(s_cls)
+	s13f_cola_fallidos(s13f_cola_fallidos)
+	h5r_reprogramar(h5r_reprogramar)
+	no_implementado(no_implementado)
+	be_cupo(be_cupo)
+	be_kit(be_kit)
+	be_alt(be_alt)
+	be_err(be_err)
+	bt_kit(bt_kit)
+	end_1(end_1)
+	end_2(end_2)
+	end_3(end_3)
+	end_4(end_4)
+	end_5(end_5)
+	end_6(end_6)
+	end_7(end_7)
+	__end__(<p>__end__</p>)
+	__start__ --> s1v_validar;
+	and1 --> s7c_consultar_cupo;
+	and1 --> s8k_verificar_kit;
+	and2 --> g4_clasificar;
+	g1_contrato -.-> s2c_registrar_cola;
+	g1_contrato -.-> s3n_normalizar;
+	g2_clave_existe -.-> s4d_devolver;
+	g2_clave_existe -.-> s5c_clasificar;
+	g3_preventivo -.-> g3b_continuar;
+	g3_preventivo -.-> s_rev_encolar;
+	g3b_continuar --> and1;
+	g3c_resolucion -.-> g3b_continuar;
+	g3c_resolucion -.-> s6d_notificar;
+	g4_clasificar -.-> g4b_continuar;
+	g4_clasificar -.-> no_implementado;
+	g4_clasificar -.-> s9q_alternativas;
+	g4_clasificar -.-> s_kit_encolar;
+	g4b_continuar --> g6_duracion;
+	g5_eleccion --> ic_msg;
+	g6_duracion -.-> g6b_decision;
+	g6_duracion -.-> no_implementado;
+	g6_duracion -.-> s_apr_encolar;
+	g6b_decision -.-> end_4;
+	g6b_decision -.-> s12r_registrar;
+	h1r_corregir --> end_1;
+	h2d_resolver --> g3c_resolucion;
+	h3k_gestionar --> end_7;
+	h4a_aprobar --> g6b_decision;
+	ic_msg --> s1v_validar;
+	s12r_registrar -.-> end_5;
+	s12r_registrar -.-> s14c_confirmar;
+	s14c_confirmar --> end_6;
+	s1v_validar --> g1_contrato;
+	s2b_consultar_clave --> g2_clave_existe;
+	s2c_registrar_cola --> h1r_corregir;
+	s3n_normalizar --> s2b_consultar_clave;
+	s4d_devolver --> end_2;
+	s5c_clasificar --> g3_preventivo;
+	s6d_notificar --> end_3;
+	s7c_consultar_cupo --> and2;
+	s8k_verificar_kit --> and2;
+	s9a_proponer --> g5_eleccion;
+	s9q_alternativas --> s9a_proponer;
+	s_apr_encolar --> h4a_aprobar;
+	s_kit_encolar --> h3k_gestionar;
+	s_rev_encolar --> h2d_resolver;
+	end_1 --> __end__;
+	end_2 --> __end__;
+	end_3 --> __end__;
+	end_4 --> __end__;
+	end_5 --> __end__;
+	end_6 --> __end__;
+	end_7 --> __end__;
+	no_implementado --> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc
